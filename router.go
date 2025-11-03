@@ -101,7 +101,10 @@ func (rb *RouteBuilder) With(middlewares ...Middleware) *RouteBuilder {
 
 // GET registers a GET handler.
 func (rb *RouteBuilder) GET(h Handler, middlewares ...Middleware) *RouteBuilder {
-	mws := append(rb.middlewares, middlewares...)
+	// Copy slice to avoid sharing underlying array
+	mws := make([]Middleware, len(rb.middlewares))
+	copy(mws, rb.middlewares)
+	mws = append(mws, middlewares...)
 	handler := chainMiddlewares(h, mws...)
 	rb.app.mux.Get(rb.path, rb.app.wrapHandler(handler))
 	return rb
@@ -109,7 +112,10 @@ func (rb *RouteBuilder) GET(h Handler, middlewares ...Middleware) *RouteBuilder 
 
 // POST registers a POST handler.
 func (rb *RouteBuilder) POST(h Handler, middlewares ...Middleware) *RouteBuilder {
-	mws := append(rb.middlewares, middlewares...)
+	// Copy slice to avoid sharing underlying array
+	mws := make([]Middleware, len(rb.middlewares))
+	copy(mws, rb.middlewares)
+	mws = append(mws, middlewares...)
 	handler := chainMiddlewares(h, mws...)
 	rb.app.mux.Post(rb.path, rb.app.wrapHandler(handler))
 	return rb
@@ -117,7 +123,10 @@ func (rb *RouteBuilder) POST(h Handler, middlewares ...Middleware) *RouteBuilder
 
 // PUT registers a PUT handler.
 func (rb *RouteBuilder) PUT(h Handler, middlewares ...Middleware) *RouteBuilder {
-	mws := append(rb.middlewares, middlewares...)
+	// Copy slice to avoid sharing underlying array
+	mws := make([]Middleware, len(rb.middlewares))
+	copy(mws, rb.middlewares)
+	mws = append(mws, middlewares...)
 	handler := chainMiddlewares(h, mws...)
 	rb.app.mux.Put(rb.path, rb.app.wrapHandler(handler))
 	return rb
@@ -125,7 +134,10 @@ func (rb *RouteBuilder) PUT(h Handler, middlewares ...Middleware) *RouteBuilder 
 
 // PATCH registers a PATCH handler.
 func (rb *RouteBuilder) PATCH(h Handler, middlewares ...Middleware) *RouteBuilder {
-	mws := append(rb.middlewares, middlewares...)
+	// Copy slice to avoid sharing underlying array
+	mws := make([]Middleware, len(rb.middlewares))
+	copy(mws, rb.middlewares)
+	mws = append(mws, middlewares...)
 	handler := chainMiddlewares(h, mws...)
 	rb.app.mux.Patch(rb.path, rb.app.wrapHandler(handler))
 	return rb
@@ -133,7 +145,10 @@ func (rb *RouteBuilder) PATCH(h Handler, middlewares ...Middleware) *RouteBuilde
 
 // DELETE registers a DELETE handler.
 func (rb *RouteBuilder) DELETE(h Handler, middlewares ...Middleware) *RouteBuilder {
-	mws := append(rb.middlewares, middlewares...)
+	// Copy slice to avoid sharing underlying array
+	mws := make([]Middleware, len(rb.middlewares))
+	copy(mws, rb.middlewares)
+	mws = append(mws, middlewares...)
 	handler := chainMiddlewares(h, mws...)
 	rb.app.mux.Delete(rb.path, rb.app.wrapHandler(handler))
 	return rb

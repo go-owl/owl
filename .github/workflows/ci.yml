@@ -1,12 +1,8 @@
 on:
   push:
-    branches: "**"
-    paths-ignore:
-      - "docs/**"
+    branches: ["main"]
   pull_request:
-    branches: "**"
-    paths-ignore:
-      - "docs/**"
+    branches: ["main"]
 
 name: Test
 jobs:
