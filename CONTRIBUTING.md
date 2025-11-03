@@ -5,12 +5,14 @@ Thank you for your interest in contributing to Owl! 🦉
 ## Prerequisites
 
 1. [Install Go][go-install] (1.22 or later)
-2. Fork and clone the repository:
+2. Fork the repository on GitHub
+3. Clone your fork:
 
-    ```bash
-    git clone https://github.com/YOUR_USERNAME/owl.git
-    cd owl
-    ```
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/owl.git
+   cd owl
+   git remote add upstream https://github.com/go-owl/owl.git
+   ```
 
 ## Development Setup
 
@@ -50,7 +52,6 @@ go run main.go
 
 [go-install]: https://golang.org/doc/install
 [fork]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo
-[branch]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-branches 
+[branch]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-branches
 [git-help]: https://docs.github.com/en
 [pull-req]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests
-
