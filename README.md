@@ -17,43 +17,42 @@ Lightweight, fast, and idiomatic Go HTTP router with Express.js-inspired API.
 
 ## Quick Start
 
-\`\`\`go
+```go
 package main
 
-import "owl"
+import "github.com/go-owl/owl"
 
 func main() {
-app := owl.New()
+    app := owl.New()
 
     app.GET("/hello", func(c *owl.Ctx) error {
         return c.JSON(map[string]string{"message": "Hello, Owl! 🦉"})
     })
 
     app.Graceful(":3000")
-
 }
-\`\`\`
+```
 
 ## Installation
 
-\`\`\`bash
-go get owl
-\`\`\`
+```bash
+go get github.com/go-owl/owl
+```
 
 Or add to your `go.mod`:
 
-\`\`\`go
-require owl v1.0.0
-\`\`\`
+```go
+require github.com/go-owl/owl v1.0.0
+```
 
 ## Examples
 
 ### CRUD API
 
-\`\`\`go
+```go
 func main() {
-app := owl.New()
-api := app.Group("/api/v1")
+    app := owl.New()
+    api := app.Group("/api/v1")
 
     // Method chaining
     api.Route("/users").
@@ -66,24 +65,23 @@ api := app.Group("/api/v1")
         DELETE(deleteUser)
 
     app.Graceful(":3000")
-
 }
 
-func listUsers(c \*owl.Ctx) error {
-users := []User{{ID: "1", Name: "Alice"}}
-return c.JSON(users)
+func listUsers(c *owl.Ctx) error {
+    users := []User{{ID: "1", Name: "Alice"}}
+    return c.JSON(users)
 }
 
-func getUser(c \*owl.Ctx) error {
-id := c.Param("id")
-return c.JSON(User{ID: id, Name: "User " + id})
+func getUser(c *owl.Ctx) error {
+    id := c.Param("id")
+    return c.JSON(User{ID: id, Name: "User " + id})
 }
-\`\`\`
+```
 
 ### Middleware
 
 ```go
-import "owl/middleware"
+import "github.com/go-owl/owl/middleware"
 
 app := owl.New()
 
@@ -96,12 +94,12 @@ app.Use(middleware.Compress(5))
 
 // Custom Owl-style middleware
 func Auth(next owl.Handler) owl.Handler {
-return func(c *owl.Ctx) error {
-if c.Header("Authorization") == "" {
-return owl.NewHTTPError(401, "Unauthorized")
-}
-return next(c)
-}
+    return func(c *owl.Ctx) error {
+        if c.Header("Authorization") == "" {
+            return owl.NewHTTPError(401, "Unauthorized")
+        }
+        return next(c)
+    }
 }
 
 app.Group("/api", Auth).GET("/protected", handler)
@@ -111,31 +109,28 @@ app.Group("/api", Auth).GET("/protected", handler)
 
 ## API Highlights
 
-## API Highlights
-
 ### Context
 
-\`\`\`go
-func handler(c \*owl.Ctx) error {
-// Request
-id := c.Param("id") // Path params
-name := c.Query("name") // Query params  
- token := c.Header("Authorization") // Headers
+```go
+func handler(c *owl.Ctx) error {
+    // Request
+    id := c.Param("id")                    // Path params
+    name := c.Query("name")                // Query params
+    token := c.Header("Authorization")     // Headers
 
     var body User
-    c.BindJSON(&body)                  // Parse JSON
+    c.BindJSON(&body)                      // Parse JSON
 
     // Response
     return c.Status(200).JSON(body)
     return c.Text("Hello")
     return c.SetHeader("X-Custom", "value").JSON(data)
-
 }
-\`\`\`
+```
 
 ### Routing
 
-\`\`\`go
+```go
 app := owl.New()
 
 // Simple routes
@@ -151,24 +146,24 @@ api := app.Group("/api/v1")
 api.GET("/health", healthCheck)
 
 // Chi-style (also supported)
-app.Mux().Get("/chi-style", func(w http.ResponseWriter, r \*http.Request) {
-w.Write([]byte("traditional chi handler"))
+app.Mux().Get("/chi-style", func(w http.ResponseWriter, r *http.Request) {
+    w.Write([]byte("traditional chi handler"))
 })
-\`\`\`
+```
 
 ## Architecture
 
 Owl is a thin Express-style wrapper around chi's router:
 
-\`\`\`
+```
 ┌─────────────────────────────┐
-│ Owl Express Layer │ ← app.GET, c.JSON, c.Param
+│  Owl Express Layer          │ ← app.GET, c.JSON, c.Param
 ├─────────────────────────────┤
-│ chi Router (v5) │ ← Radix tree, routing
+│  chi Router (v5)            │ ← Radix tree, routing
 ├─────────────────────────────┤
-│ Go net/http │ ← Standard library
+│  Go net/http                │ ← Standard library
 └─────────────────────────────┘
-\`\`\`
+```
 
 - **Owl layer** provides Express-style API
 - **chi core** handles all routing (zero overhead)
