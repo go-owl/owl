@@ -58,6 +58,13 @@ import "net/http"
 // Version is the current version of Owl.
 const Version = "1.0.0"
 
+// Size constants for BodyLimit configuration.
+const (
+	KB int64 = 1024
+	MB int64 = 1024 * KB
+	GB int64 = 1024 * MB
+)
+
 // NewRouter returns a new Mux object that implements the Router interface.
 func NewRouter() *Mux {
 	return NewMux()

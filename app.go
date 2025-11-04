@@ -17,12 +17,14 @@ type App struct {
 	middlewares  []Middleware
 	name         string // Server name (default: "Owl")
 	version      string // Server version (default: Version constant)
+	bodyLimit    int64  // Max request body size in bytes (default: 10MB)
 }
 
 // AppConfig holds configuration for creating a new App.
 type AppConfig struct {
-	Name    string // Server name (default: "Owl")
-	Version string // Server version (default: owl.Version)
+	Name      string // Server name (default: "Owl")
+	Version   string // Server version (default: owl.Version)
+	BodyLimit int64  // Max request body size in bytes (default: 10MB, 0 = unlimited)
 }
 
 // New creates a new App with optional configuration.
@@ -33,9 +35,8 @@ func New(config ...AppConfig) *App {
 		middlewares:  []Middleware{},
 		name:         "Owl",
 		version:      Version,
-	}
-
-	// Apply config if provided
+		bodyLimit:    10 * MB, // 10MB default
+	} // Apply config if provided
 	if len(config) > 0 {
 		cfg := config[0]
 		if cfg.Name != "" {
@@ -43,6 +44,12 @@ func New(config ...AppConfig) *App {
 		}
 		if cfg.Version != "" {
 			app.version = cfg.Version
+		}
+		if cfg.BodyLimit > 0 {
+			app.bodyLimit = cfg.BodyLimit
+		} else if cfg.BodyLimit == 0 {
+			// 0 means unlimited (remove limit)
+			app.bodyLimit = 0
 		}
 	}
 
@@ -151,6 +158,11 @@ func (a *App) Graceful(addr string, timeout ...time.Duration) error {
 // wrapHandler converts DX Handler to http.HandlerFunc.
 func (a *App) wrapHandler(h Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Apply body limit if configured
+		if a.bodyLimit > 0 {
+			r.Body = http.MaxBytesReader(w, r.Body, a.bodyLimit)
+		}
+
 		c := newCtx(w, r)
 		if err := h(c); err != nil {
 			a.errorHandler(c, err)
