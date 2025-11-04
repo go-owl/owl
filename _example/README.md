@@ -1,114 +1,206 @@
 # Owl Examples
 
-This directory contains example applications demonstrating various features of the Owl framework.
+Professional examples demonstrating Owl framework features.
 
-## Examples
+## 📚 Available Examples
 
-### 🌍 Hello World
+### 🔌 REST API (`rest-api/`)
 
-**Path:** `_example/helloworld/`
+Complete CRUD API with best practices:
 
-Complete example showing all basic features:
-
-- Route groups
-- Path parameters
-- Query parameters
-- JSON request/response
-- CRUD operations
-- Method chaining
+- RESTful endpoints (GET, POST, PATCH, DELETE)
+- Request/response handling with `c.Bind().JSON()`
+- Path parameters and query strings
+- Route groups and chaining
+- Error handling
 
 ```bash
-go run _example/helloworld/main.go
+go run _example/rest-api/main.go
 curl http://localhost:8080/api/v1/users
+curl -X POST http://localhost:8080/api/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"John","email":"john@example.com"}'
 ```
 
-### 🚀 Simple Start
+### � Request Binding (`request-binding/`)
 
-**Path:** `_example/simple/`
+Comprehensive binding examples for all content types:
 
-Minimal example using `app.Start()` for simple HTTP server without graceful shutdown.
+- **JSON**: `c.Bind().JSON(&data)`
+- **XML**: `c.Bind().XML(&data)`
+- **Form**: `c.Bind().Form(&data)` (URL-encoded)
+- **Query**: `c.Bind().Query(&data)` (URL parameters)
+- **Multipart**: `c.Bind().MultipartForm(&data, maxMemory)` (file uploads)
+- **Text**: `c.Bind().Text(&str)` (webhooks)
+- **Bytes**: `c.Bind().Bytes(&bytes)` (raw data)
 
 ```bash
-go run _example/simple/main.go
-curl http://localhost:8081/api/hello
+go run _example/request-binding/main.go
+# See output for curl examples
 ```
 
-### 🛑 Graceful Shutdown
+### 🛡️ CORS (`cors/`)
 
-**Path:** `_example/graceful/`
+Cross-Origin Resource Sharing configuration:
 
-Example demonstrating `app.Graceful()` with custom timeout for graceful shutdown handling.
+- Default CORS settings
+- Custom CORS with specific origins
+- Preflight handling
 
 ```bash
-go run _example/graceful/main.go
-# In another terminal:
-curl http://localhost:8082/api/long-task
-# Press Ctrl+C to trigger graceful shutdown
+go run _example/cors/main.go
+curl -X OPTIONS http://localhost:8080/api/data \
+  -H "Origin: https://example.com" \
+  -H "Access-Control-Request-Method: POST"
 ```
 
-### 🔀 Mixed Style
+### � Request Limits (`request-limits/`)
 
-**Path:** `_example/mixed-style/`
+Body size limiting with readable constants:
 
-Example showing how to use both Express-style and chi-style APIs together in one application.
+- Default limit (10MB)
+- Custom limits (1MB, 50MB)
+- Unlimited (for special cases)
+- Using `owl.KB`, `owl.MB`, `owl.GB` constants
 
 ```bash
-go run _example/mixed-style/main.go
-curl http://localhost:3000/api/express
-curl http://localhost:3000/api/chi
+go run _example/request-limits/main.go
+curl -X POST http://localhost:8080/api/upload \
+  -H "Content-Type: application/json" \
+  -d '{"data":"..."}'
 ```
 
-### ⚙️ Custom Config
+### � Middleware Chain (`middleware-chain/`)
 
-**Path:** `_example/custom-config/`
+Custom middleware implementation:
 
-Example demonstrating custom app configuration with `AppConfig` (name and version).
-
-```bash
-go run _example/custom-config/main.go
-curl http://localhost:8084/products
-curl http://localhost:8084/health
-```
-
-### 🔧 Custom Middleware
-
-**Path:** `_example/custom-middleware/`
-
-Example showing how to create custom Owl-style middleware for:
-
+- Permission-based routing
 - Request timing
 - Authentication
 - Context value passing
 
 ```bash
-go run _example/custom-middleware/main.go
-curl http://localhost:8083/
-curl -H "X-API-Key: secret123" http://localhost:8083/api/profile
+go run _example/middleware-chain/main.go
+curl http://localhost:8083/api/users
+curl http://localhost:8083/api/admin/settings
 ```
 
-## Running Examples
+### 🎯 Method-Level Middleware (`method-level-middleware/`)
 
-Each example is a standalone application in its own directory:
+Apply middleware to specific HTTP methods:
+
+- Different middleware for GET vs POST
+- Permission checks per method
+- Route-specific handlers
+
+```bash
+go run _example/method-level-middleware/main.go
+curl http://localhost:8080/api/posts
+curl -X POST http://localhost:8080/api/posts
+```
+
+### � Hybrid Routing (`hybrid-routing/`)
+
+Use Express-style and chi-style APIs together:
+
+- Owl handlers with `c *Ctx`
+- Chi handlers with `w, r`
+- Mixed middleware
+
+```bash
+go run _example/hybrid-routing/main.go
+curl http://localhost:3000/api/owl-style
+curl http://localhost:3000/api/chi-style
+```
+
+### 🛑 Graceful Shutdown (`graceful-shutdown/`)
+
+Production-ready graceful shutdown:
+
+- Signal handling (SIGINT, SIGTERM)
+- Custom timeout
+- In-flight request completion
+
+```bash
+go run _example/graceful-shutdown/main.go
+# Press Ctrl+C to test graceful shutdown
+```
+
+### 🔒 Strict JSON (`strict-json/`)
+
+Production-ready JSON validation with StrictJSON mode:
+
+- Reject unknown fields (prevent typos and injection)
+- Detect trailing data after JSON object
+- Enforce API contract compliance
+- Auto binder with strict validation
+
+```bash
+go run _example/strict-json/main.go
+# Valid request
+curl -X POST http://localhost:8080/api/users/valid \
+  -H "Content-Type: application/json" \
+  -d '{"name":"John","email":"john@example.com","age":25}'
+
+# Invalid - unknown field (will be rejected)
+curl -X POST http://localhost:8080/api/users/unknown-fields \
+  -H "Content-Type: application/json" \
+  -d '{"name":"John","email":"john@example.com","age":25,"extraField":"not allowed"}'
+```
+
+## 🚀 Quick Start
 
 ```bash
 # Run any example
-go run _example/<example-name>/main.go
+go run _example/<folder-name>/main.go
 
-# Or build and run
-cd _example/<example-name>
-go build
-./<example-name>
+# Or build first
+cd _example/<folder-name>
+go build && ./<folder-name>
 ```
 
-## Key Differences
+## 📖 Learning Path
 
-| Feature           | `app.Start()`        | `app.Graceful()`        |
-| ----------------- | -------------------- | ----------------------- |
-| Server startup    | ✅ Simple blocking   | ✅ With signal handling |
-| Graceful shutdown | ❌ No                | ✅ Yes                  |
-| Custom timeout    | ❌ N/A               | ✅ Optional parameter   |
-| Use case          | Simple apps, testing | Production apps         |
+**For beginners:**
 
-## Learn More
+1. `rest-api/` - Start here for basic CRUD operations
+2. `request-binding/` - Learn all binding methods
+3. `graceful-shutdown/` - Production-ready server
 
-See the main [README.md](../README.md) for full documentation.
+**For advanced users:** 
+1. `middleware-chain/` - Custom middleware 
+2. `method-level-middleware/` - Fine-grained control 
+3. `hybrid-routing/` - Mix Owl and chi styles
+
+**For specific features:**
+
+- `cors/` - Enable cross-origin requests
+- `request-limits/` - Protect against large payloads
+- `strict-json/` - Enforce JSON validation in production
+
+## 🎯 Key Concepts
+
+### New Binding API
+
+```go
+// Old (deprecated but still works)
+c.BindJSON(&data)
+
+// New (recommended)
+c.Bind().JSON(&data)
+c.Bind().XML(&data)
+c.Bind().Form(&data)
+c.Bind().Query(&data)
+c.Bind().MultipartForm(&data, 10*owl.MB)
+```
+
+### Production Deployment
+
+- Always use `app.Graceful()` for production
+- Set appropriate `BodyLimit` in `AppConfig`
+- Add `middleware.Logger` and `middleware.Recoverer`
+- Configure CORS for cross-origin APIs
+
+## 📚 Documentation
+
+See the main [README.md](../README.md) for complete API documentation.

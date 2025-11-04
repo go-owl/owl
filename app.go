@@ -18,13 +18,15 @@ type App struct {
 	name         string // Server name (default: "Owl")
 	version      string // Server version (default: Version constant)
 	bodyLimit    int64  // Max request body size in bytes (default: 10MB)
+	strictJSON   bool   // Reject JSON with unknown fields (default: false)
 }
 
 // AppConfig holds configuration for creating a new App.
 type AppConfig struct {
-	Name      string // Server name (default: "Owl")
-	Version   string // Server version (default: owl.Version)
-	BodyLimit int64  // Max request body size in bytes (default: 10MB, 0 = unlimited)
+	Name       string // Server name (default: "Owl")
+	Version    string // Server version (default: owl.Version)
+	BodyLimit  int64  // Max request body size in bytes (default: 10MB, 0 = unlimited)
+	StrictJSON bool   // Reject JSON with unknown fields (default: false)
 }
 
 // New creates a new App with optional configuration.
@@ -36,6 +38,7 @@ func New(config ...AppConfig) *App {
 		name:         "Owl",
 		version:      Version,
 		bodyLimit:    10 * MB, // 10MB default
+		strictJSON:   false,   // Allow unknown fields by default
 	} // Apply config if provided
 	if len(config) > 0 {
 		cfg := config[0]
@@ -51,6 +54,7 @@ func New(config ...AppConfig) *App {
 			// 0 means unlimited (remove limit)
 			app.bodyLimit = 0
 		}
+		app.strictJSON = cfg.StrictJSON
 	}
 
 	return app
@@ -163,7 +167,7 @@ func (a *App) wrapHandler(h Handler) http.HandlerFunc {
 			r.Body = http.MaxBytesReader(w, r.Body, a.bodyLimit)
 		}
 
-		c := newCtx(w, r)
+		c := newCtx(w, r, a.strictJSON)
 		if err := h(c); err != nil {
 			a.errorHandler(c, err)
 		}

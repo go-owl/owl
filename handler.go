@@ -6,17 +6,19 @@ import (
 
 // Ctx wraps http.Request and http.ResponseWriter for Express/Fiber-style API.
 type Ctx struct {
-	Request  *http.Request
-	Response http.ResponseWriter
-	status   int
+	Request    *http.Request
+	Response   http.ResponseWriter
+	status     int
+	strictJSON bool // JSON strict mode flag from App config
 }
 
 // newCtx creates a new Ctx.
-func newCtx(w http.ResponseWriter, r *http.Request) *Ctx {
+func newCtx(w http.ResponseWriter, r *http.Request, strictJSON bool) *Ctx {
 	return &Ctx{
-		Request:  r,
-		Response: w,
-		status:   http.StatusOK,
+		Request:    r,
+		Response:   w,
+		status:     http.StatusOK,
+		strictJSON: strictJSON,
 	}
 }
 
@@ -47,7 +49,18 @@ func (c *Ctx) Status(code int) *Ctx {
 	return c
 }
 
+// Bind returns a Binder for flexible content type binding.
+// Example: c.Bind().JSON(&data), c.Bind().XML(&data)
+func (c *Ctx) Bind() *Binder {
+	return &Binder{
+		request:    c.Request,
+		strictJSON: c.strictJSON,
+	}
+}
+
 // BindJSON binds request JSON body to dst.
+// Deprecated: Use c.Bind().JSON(dst) for more flexibility.
+// This method is kept for backward compatibility.
 func (c *Ctx) BindJSON(dst interface{}) error {
 	return BindJSON(c.Request, dst)
 }

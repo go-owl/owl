@@ -1,4 +1,3 @@
-package cors
 package main
 
 import (
@@ -40,7 +39,7 @@ func main() {
 
 	api.POST("/data", func(c *owl.Ctx) error {
 		var body map[string]interface{}
-		if err := c.BindJSON(&body); err != nil {
+		if err := c.Bind().JSON(&body); err != nil {
 			return err
 		}
 
