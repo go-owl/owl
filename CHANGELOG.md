@@ -2,6 +2,59 @@
 
 All notable changes to Owl will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- 🔒 **StrictJSON Mode**: Production-ready JSON validation
+  - `AppConfig.StrictJSON` - Reject unknown fields via `DisallowUnknownFields()`
+  - Detect and reject trailing data after JSON objects
+  - Prevent typos, injection attacks, and API contract violations
+- 🤖 **Auto Binder**: `c.Bind().Auto(&data)` - Automatic content-type detection
+  - Supports JSON, XML, Form, and Multipart automatically
+  - Eliminates manual Content-Type checking
+- 📊 **Advanced Slice Binding**: Support all primitive types in slices
+  - `[]string`, `[]int`, `[]int64`, `[]float64`, `[]bool`
+  - Example: `?tags=a&tags=b&scores=1&scores=2`
+- 🎯 **Pointer & Array Field Support**: 
+  - Bind to pointer fields: `*string`, `*int`
+  - Bind to array fields: `[3]int`, `[5]string`
+- 🛡️ **Enhanced Security**:
+  - Named constants: `maxFieldLength`, `maxTextBodySize`, `maxFileSize`
+  - File size validation (50MB per file)
+  - Field length limits (10KB per field)
+- ♻️ **Code Quality Improvements**:
+  - DRY refactor: `readBodyLimited()` helper for Text/Bytes methods
+  - Eliminated code duplication
+  - Professional constant naming
+- 📚 **Reorganized Examples**: 8 comprehensive examples
+  - `rest-api/` - Complete CRUD API
+  - `request-binding/` - All binding methods
+  - `strict-json/` - StrictJSON validation demo
+  - `graceful-shutdown/` - Production shutdown
+  - `cors/` - CORS configuration
+  - `request-limits/` - Body size limits
+  - `middleware-chain/` - Custom middleware
+  - `method-level-middleware/` - Per-method middleware
+  - `hybrid-routing/` - Mixed Owl/chi styles
+- 📖 **Documentation Updates**:
+  - Updated `_example/README.md` with all examples
+  - Added learning path for beginners and advanced users
+  - Comprehensive curl examples
+
+### Changed
+
+- 🔧 Refactored `Text()` and `Bytes()` methods to use shared helper
+- 🔧 Replaced magic numbers with named constants throughout codebase
+- 🔧 Improved error messages for better debugging
+
+### Improved
+
+- ✅ All 118 tests passing
+- ✅ No performance regression
+- ✅ Better code maintainability
+- ✅ Enhanced type safety
+
 ## [1.0.0] - 2025-11-04
 
 ### Added - Owl Fork
