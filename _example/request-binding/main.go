@@ -33,7 +33,7 @@ func main() {
 	api.POST("/users/json", func(c *owl.Ctx) error {
 		var user User
 
-		// ใช้แบบใหม่: c.Bind().JSON()
+		// Use new style: c.Bind().JSON()
 		if err := c.Bind().JSON(&user); err != nil {
 			return err
 		}
@@ -49,7 +49,7 @@ func main() {
 	api.POST("/users/xml", func(c *owl.Ctx) error {
 		var user User
 
-		// รองรับ XML ด้วย!
+		// XML binding is also supported!
 		if err := c.Bind().XML(&user); err != nil {
 			return err
 		}
@@ -65,7 +65,7 @@ func main() {
 	api.POST("/users/legacy", func(c *owl.Ctx) error {
 		var user User
 
-		// แบบเก่ายังใช้ได้
+		// Legacy style still works
 		if err := c.BindJSON(&user); err != nil {
 			return err
 		}
@@ -81,7 +81,7 @@ func main() {
 	api.POST("/webhook/text", func(c *owl.Ctx) error {
 		var payload string
 
-		// รับ raw text - เหมาะสำหรับ webhook
+		// Receive raw text - perfect for webhooks
 		if err := c.Bind().Text(&payload); err != nil {
 			return err
 		}
@@ -98,16 +98,16 @@ func main() {
 	api.POST("/webhook/secure", func(c *owl.Ctx) error {
 		var body []byte
 
-		// รับ raw bytes เพื่อตรวจสอบ signature
+		// Receive raw bytes for signature verification
 		if err := c.Bind().Bytes(&body); err != nil {
 			return err
 		}
 
-		// ตรวจสอบ signature (ตัวอย่าง - ใช้ env variable ในการ production)
+		// Verify signature (example - use environment variable in production)
 		secret := "your-webhook-secret" // TODO: Use os.Getenv("WEBHOOK_SECRET") in production
 		signature := c.Header("X-Signature")
 
-		// คำนวณ HMAC
+		// Calculate HMAC
 		h := hmac.New(sha256.New, []byte(secret))
 		h.Write(body)
 		expectedSignature := hex.EncodeToString(h.Sum(nil))
@@ -133,7 +133,7 @@ func main() {
 			Tags  []string `query:"tags"` // Support multiple values: ?tags=a&tags=b
 		}
 
-		// Bind จาก query parameters
+		// Bind from query parameters
 		if err := c.Bind().Query(&query); err != nil {
 			return err
 		}
@@ -154,7 +154,7 @@ func main() {
 			Password string `form:"password"`
 		}
 
-		// Bind จาก URL-encoded form
+		// Bind from URL-encoded form
 		if err := c.Bind().Form(&credentials); err != nil {
 			return err
 		}
@@ -174,7 +174,7 @@ func main() {
 			File        *multipart.FileHeader `form:"file"`
 		}
 
-		// Bind multipart form รวม file upload
+		// Bind multipart form including file upload
 		if err := c.Bind().MultipartForm(&upload, 10*owl.MB); err != nil {
 			return err
 		}

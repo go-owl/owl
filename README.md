@@ -13,6 +13,8 @@ Lightweight, fast, and idiomatic Go HTTP router with Express.js-inspired API.
 - 🔧 **100% Compatible** - Works with any `net/http` handler
 - 🎨 **Method Chaining** - Clean, fluent route definitions
 - 🛡️ **Error Handling** - Built-in error propagation
+- 🔒 **Advanced Binding** - JSON, XML, Form, Query, Multipart with StrictJSON mode
+- 🤖 **Auto Binder** - Automatic content-type detection
 - 🌳 **Zero Dependencies** - Pure standard library
 
 ## Quick Start
@@ -107,6 +109,68 @@ app.Group("/api", Auth).GET("/protected", handler)
 
 > **Note:** Owl includes **all chi middleware** - battle-tested in production by Cloudflare, Heroku, and thousands of projects. Use `net/http` compatible middleware from chi ecosystem too!
 
+### Request Binding
+
+```go
+import "mime/multipart"
+
+// Enable StrictJSON for production (rejects unknown fields & trailing data)
+app := owl.New(owl.AppConfig{
+    StrictJSON: true,
+    BodyLimit:  10 * owl.MB,
+})
+
+func createUser(c *owl.Ctx) error {
+    var user User
+    
+    // Flexible binding methods
+    if err := c.Bind().JSON(&user); err != nil {
+        return err
+    }
+    
+    // Or use Auto() - detects content type automatically
+    if err := c.Bind().Auto(&user); err != nil {
+        return err
+    }
+    
+    return c.Status(201).JSON(user)
+}
+
+func search(c *owl.Ctx) error {
+    var query struct {
+        Q     string   `query:"q"`
+        Tags  []string `query:"tags"`  // Supports arrays: ?tags=a&tags=b
+        Page  int      `query:"page"`
+    }
+    
+    c.Bind().Query(&query)
+    return c.JSON(query)
+}
+
+func upload(c *owl.Ctx) error {
+    var form struct {
+        Title string                `form:"title"`
+        File  *multipart.FileHeader `form:"file"`
+    }
+    
+    c.Bind().MultipartForm(&form, 10*owl.MB)
+    return c.JSON(map[string]interface{}{
+        "filename": form.File.Filename,
+        "size":     form.File.Size,
+    })
+}
+```
+
+**Supported bindings:**
+- `c.Bind().JSON(&dst)` - JSON with optional StrictJSON mode
+- `c.Bind().XML(&dst)` - XML parsing
+- `c.Bind().Form(&dst)` - URL-encoded forms
+- `c.Bind().Query(&dst)` - Query parameters with array support
+- `c.Bind().MultipartForm(&dst, maxMemory)` - File uploads
+- `c.Bind().Text(&str)` - Raw text (webhooks)
+- `c.Bind().Bytes(&bytes)` - Raw bytes
+- `c.Bind().Auto(&dst)` - Auto-detect content type
+
 ## API Highlights
 
 ### Context
@@ -118,8 +182,13 @@ func handler(c *owl.Ctx) error {
     name := c.Query("name")                // Query params
     token := c.Header("Authorization")     // Headers
 
+    // Flexible binding (new style)
     var body User
-    c.BindJSON(&body)                      // Parse JSON
+    c.Bind().JSON(&body)                   // Parse JSON
+    c.Bind().XML(&body)                    // Parse XML
+    c.Bind().Form(&body)                   // Parse form data
+    c.Bind().Query(&body)                  // Parse query params
+    c.Bind().Auto(&body)                   // Auto-detect content type
 
     // Response
     return c.Status(200).JSON(body)

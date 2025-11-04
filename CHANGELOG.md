@@ -16,7 +16,7 @@ All notable changes to Owl will be documented in this file.
 - 📊 **Advanced Slice Binding**: Support all primitive types in slices
   - `[]string`, `[]int`, `[]int64`, `[]float64`, `[]bool`
   - Example: `?tags=a&tags=b&scores=1&scores=2`
-- 🎯 **Pointer & Array Field Support**: 
+- 🎯 **Pointer & Array Field Support**:
   - Bind to pointer fields: `*string`, `*int`
   - Bind to array fields: `[3]int`, `[5]string`
 - 🛡️ **Enhanced Security**:

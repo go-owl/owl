@@ -167,9 +167,10 @@ go build && ./<folder-name>
 2. `request-binding/` - Learn all binding methods
 3. `graceful-shutdown/` - Production-ready server
 
-**For advanced users:** 
-1. `middleware-chain/` - Custom middleware 
-2. `method-level-middleware/` - Fine-grained control 
+**For advanced users:**
+
+1. `middleware-chain/` - Custom middleware
+2. `method-level-middleware/` - Fine-grained control
 3. `hybrid-routing/` - Mix Owl and chi styles
 
 **For specific features:**

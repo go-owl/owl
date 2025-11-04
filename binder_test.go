@@ -611,9 +611,9 @@ func TestBinder_Query_MultipleTypes(t *testing.T) {
 	binder := &Binder{request: req}
 
 	var result struct {
-		Tags    []string `query:"tags"`
-		Scores  []int    `query:"scores"`
-		Active  []bool   `query:"active"`
+		Tags   []string `query:"tags"`
+		Scores []int    `query:"scores"`
+		Active []bool   `query:"active"`
 	}
 
 	err := binder.Query(&result)
@@ -652,8 +652,8 @@ func TestBinder_Query_PointerAndArray(t *testing.T) {
 	binder := &Binder{request: req}
 
 	var result struct {
-		Name *string   `query:"name"`
-		Nums [3]int    `query:"nums"`
+		Name *string `query:"name"`
+		Nums [3]int  `query:"nums"`
 	}
 
 	err := binder.Query(&result)
