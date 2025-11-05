@@ -52,6 +52,8 @@ require github.com/go-owl/owl v1.0.0
 ### CRUD API
 
 ```go
+import "log"
+
 func main() {
     app := owl.New()
     api := app.Group("/api/v1")
@@ -66,7 +68,7 @@ func main() {
         PUT(updateUser).
         DELETE(deleteUser)
 
-    app.Graceful(":3000")
+    log.Fatal(app.Start(":3000"))
 }
 
 func listUsers(c *owl.Ctx) error {
@@ -122,17 +124,17 @@ app := owl.New(owl.AppConfig{
 
 func createUser(c *owl.Ctx) error {
     var user User
-    
+
     // Flexible binding methods
     if err := c.Bind().JSON(&user); err != nil {
         return err
     }
-    
+
     // Or use Auto() - detects content type automatically
     if err := c.Bind().Auto(&user); err != nil {
         return err
     }
-    
+
     return c.Status(201).JSON(user)
 }
 
@@ -142,7 +144,7 @@ func search(c *owl.Ctx) error {
         Tags  []string `query:"tags"`  // Supports arrays: ?tags=a&tags=b
         Page  int      `query:"page"`
     }
-    
+
     c.Bind().Query(&query)
     return c.JSON(query)
 }
@@ -152,7 +154,7 @@ func upload(c *owl.Ctx) error {
         Title string                `form:"title"`
         File  *multipart.FileHeader `form:"file"`
     }
-    
+
     c.Bind().MultipartForm(&form, 10*owl.MB)
     return c.JSON(map[string]interface{}{
         "filename": form.File.Filename,
@@ -162,6 +164,7 @@ func upload(c *owl.Ctx) error {
 ```
 
 **Supported bindings:**
+
 - `c.Bind().JSON(&dst)` - JSON with optional StrictJSON mode
 - `c.Bind().XML(&dst)` - XML parsing
 - `c.Bind().Form(&dst)` - URL-encoded forms

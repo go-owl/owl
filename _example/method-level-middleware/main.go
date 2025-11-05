@@ -33,7 +33,7 @@ func main() {
 	api.Route("/admin/stats").
 		GET(getStats, RequireAuth(), RequireAdmin(), RateLimit())
 
-	log.Fatal(app.Graceful(":8080"))
+	log.Fatal(app.Start(":8080"))
 }
 
 // Permission middleware

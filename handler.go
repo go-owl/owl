@@ -4,21 +4,19 @@ import (
 	"net/http"
 )
 
-// Ctx wraps http.Request and http.ResponseWriter for Express/Fiber-style API.
+// Ctx represents the request context.
 type Ctx struct {
-	Request    *http.Request
-	Response   http.ResponseWriter
-	status     int
-	strictJSON bool // JSON strict mode flag from App config
+	Request  *http.Request
+	Response http.ResponseWriter
+	status   int
 }
 
 // newCtx creates a new Ctx.
-func newCtx(w http.ResponseWriter, r *http.Request, strictJSON bool) *Ctx {
+func newCtx(w http.ResponseWriter, r *http.Request) *Ctx {
 	return &Ctx{
-		Request:    r,
-		Response:   w,
-		status:     http.StatusOK,
-		strictJSON: strictJSON,
+		Request:  r,
+		Response: w,
+		status:   http.StatusOK,
 	}
 }
 
@@ -53,8 +51,7 @@ func (c *Ctx) Status(code int) *Ctx {
 // Example: c.Bind().JSON(&data), c.Bind().XML(&data)
 func (c *Ctx) Bind() *Binder {
 	return &Binder{
-		request:    c.Request,
-		strictJSON: c.strictJSON,
+		request: c.Request,
 	}
 }
 

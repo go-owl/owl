@@ -49,5 +49,5 @@ func main() {
 		})
 	})
 
-	log.Fatal(app.Graceful(":8080"))
+	log.Fatal(app.Start(":8080"))
 }

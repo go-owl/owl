@@ -31,7 +31,7 @@ func main() {
 	})
 
 	// You can choose your preferred style!
-	app.Graceful(":3000")
+	app.Start(":3000")
 }
 
 // Express-style handler (returns error)

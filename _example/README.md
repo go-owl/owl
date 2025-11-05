@@ -113,39 +113,33 @@ curl http://localhost:3000/api/owl-style
 curl http://localhost:3000/api/chi-style
 ```
 
-### 🛑 Graceful Shutdown (`graceful-shutdown/`)
+### 🛑 Graceful Shutdown (`graceful/`)
 
-Production-ready graceful shutdown:
+Production-ready graceful shutdown implementation:
 
 - Signal handling (SIGINT, SIGTERM)
-- Custom timeout
+- Custom timeout configuration
 - In-flight request completion
+- Manual implementation for full control
 
 ```bash
-go run _example/graceful-shutdown/main.go
+go run _example/graceful/main.go
 # Press Ctrl+C to test graceful shutdown
 ```
 
-### 🔒 Strict JSON (`strict-json/`)
+### � UberFx Integration (`uberfx/`)
 
-Production-ready JSON validation with StrictJSON mode:
+Professional dependency injection with UberFx:
 
-- Reject unknown fields (prevent typos and injection)
-- Detect trailing data after JSON object
-- Enforce API contract compliance
-- Auto binder with strict validation
+- Fiber-like API patterns
+- Lifecycle management (OnStart/OnStop)
+- Graceful shutdown with DI
+- Production-ready structure
 
 ```bash
-go run _example/strict-json/main.go
-# Valid request
-curl -X POST http://localhost:8080/api/users/valid \
-  -H "Content-Type: application/json" \
-  -d '{"name":"John","email":"john@example.com","age":25}'
-
-# Invalid - unknown field (will be rejected)
-curl -X POST http://localhost:8080/api/users/unknown-fields \
-  -H "Content-Type: application/json" \
-  -d '{"name":"John","email":"john@example.com","age":25,"extraField":"not allowed"}'
+go run _example/uberfx/main.go
+curl http://localhost:8080/health
+curl http://localhost:8080/api/v1/users
 ```
 
 ## 🚀 Quick Start
@@ -165,19 +159,19 @@ go build && ./<folder-name>
 
 1. `rest-api/` - Start here for basic CRUD operations
 2. `request-binding/` - Learn all binding methods
-3. `graceful-shutdown/` - Production-ready server
+3. `graceful/` - Production-ready graceful shutdown
 
 **For advanced users:**
 
 1. `middleware-chain/` - Custom middleware
 2. `method-level-middleware/` - Fine-grained control
 3. `hybrid-routing/` - Mix Owl and chi styles
+4. `uberfx/` - Professional dependency injection
 
 **For specific features:**
 
 - `cors/` - Enable cross-origin requests
 - `request-limits/` - Protect against large payloads
-- `strict-json/` - Enforce JSON validation in production
 
 ## 🎯 Key Concepts
 

@@ -53,8 +53,8 @@ func main() {
 	v1.GET("/health", healthCheck)
 	v1.GET("/echo", echoQuery)
 
-	// Start server with graceful shutdown
-	log.Fatal(app.Graceful(":8080"))
+	// Start server
+	log.Fatal(app.Start(":8080"))
 }
 
 // Handler functions

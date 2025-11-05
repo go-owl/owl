@@ -40,7 +40,7 @@ func main() {
 	api.GET("/profile", profileHandler)
 	api.GET("/data", dataHandler)
 
-	log.Fatal(app.Graceful(":8083"))
+	log.Fatal(app.Start(":8083"))
 }
 
 // timingMiddleware measures request processing time (chi-style)

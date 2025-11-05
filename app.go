@@ -4,10 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 // App is the main DX application.
@@ -15,18 +11,17 @@ type App struct {
 	mux          *Mux
 	errorHandler ErrorHandler
 	middlewares  []Middleware
-	name         string // Server name (default: "Owl")
-	version      string // Server version (default: Version constant)
-	bodyLimit    int64  // Max request body size in bytes (default: 10MB)
-	strictJSON   bool   // Reject JSON with unknown fields (default: false)
+	name         string       // Server name (default: "Owl")
+	version      string       // Server version (default: Version constant)
+	bodyLimit    int64        // Max request body size in bytes (default: 10MB)
+	server       *http.Server // HTTP server instance for shutdown
 }
 
 // AppConfig holds configuration for creating a new App.
 type AppConfig struct {
-	Name       string // Server name (default: "Owl")
-	Version    string // Server version (default: owl.Version)
-	BodyLimit  int64  // Max request body size in bytes (default: 10MB, 0 = unlimited)
-	StrictJSON bool   // Reject JSON with unknown fields (default: false)
+	Name      string // Server name (default: "Owl")
+	Version   string // Server version (default: owl.Version)
+	BodyLimit int64  // Max request body size in bytes (default: 10MB, 0 = unlimited)
 }
 
 // New creates a new App with optional configuration.
@@ -38,7 +33,6 @@ func New(config ...AppConfig) *App {
 		name:         "Owl",
 		version:      Version,
 		bodyLimit:    10 * MB, // 10MB default
-		strictJSON:   false,   // Allow unknown fields by default
 	} // Apply config if provided
 	if len(config) > 0 {
 		cfg := config[0]
@@ -54,7 +48,6 @@ func New(config ...AppConfig) *App {
 			// 0 means unlimited (remove limit)
 			app.bodyLimit = 0
 		}
-		app.strictJSON = cfg.StrictJSON
 	}
 
 	return app
@@ -116,47 +109,63 @@ func (a *App) Start(addr string) error {
 	return http.ListenAndServe(addr, a)
 }
 
-// Graceful starts the HTTP server with graceful shutdown support.
-func (a *App) Graceful(addr string, timeout ...time.Duration) error {
-	// Default timeout is 10 seconds
-	shutdownTimeout := 10 * time.Second
-	if len(timeout) > 0 {
-		shutdownTimeout = timeout[0]
-	}
-
+// Listen starts the HTTP server and returns it for external management.
+// Useful for frameworks like uberfx that manage server lifecycle.
+// Similar to Fiber's Listen() method.
+func (a *App) Listen(addr string) *http.Server {
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: a,
 	}
+	a.server = srv // Store for Shutdown()
+	return srv
+}
 
-	// Channel to listen for interrupt signals
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
-
-	// Start server in goroutine
-	go func() {
-		log.Printf("\033[92m%s\033[0m v%s server starting on \033[102;30m%s\033[0m", a.name, a.version, addr)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server failed to start: %v", err)
-		}
-	}()
-
-	// Wait for interrupt signal
-	<-quit
-	log.Printf("\033[92m%s\033[0m \033[33mShutting down server gracefully...\033[0m", a.name)
-
-	// Create shutdown context with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-	defer cancel()
-
-	// Attempt graceful shutdown
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Printf("\033[41m Error \033[0m Server forced to shutdown: %v", err)
-		return err
+// Shutdown gracefully shuts down the server.
+// Compatible with uberfx lifecycle hooks.
+// Similar to Fiber's Shutdown() method.
+func (a *App) Shutdown() error {
+	if a.server == nil {
+		return nil // No server to shutdown
 	}
+	return a.server.Shutdown(context.Background())
+}
 
-	log.Printf("\033[92m%s\033[0m Server stopped", a.name)
-	return nil
+// HTTP Method shortcuts for convenience
+
+// GET registers a GET handler.
+func (a *App) GET(path string, h Handler, middlewares ...Middleware) *App {
+	handler := chainMiddlewares(h, middlewares...)
+	a.mux.Get(path, a.wrapHandler(handler))
+	return a
+}
+
+// POST registers a POST handler.
+func (a *App) POST(path string, h Handler, middlewares ...Middleware) *App {
+	handler := chainMiddlewares(h, middlewares...)
+	a.mux.Post(path, a.wrapHandler(handler))
+	return a
+}
+
+// PUT registers a PUT handler.
+func (a *App) PUT(path string, h Handler, middlewares ...Middleware) *App {
+	handler := chainMiddlewares(h, middlewares...)
+	a.mux.Put(path, a.wrapHandler(handler))
+	return a
+}
+
+// PATCH registers a PATCH handler.
+func (a *App) PATCH(path string, h Handler, middlewares ...Middleware) *App {
+	handler := chainMiddlewares(h, middlewares...)
+	a.mux.Patch(path, a.wrapHandler(handler))
+	return a
+}
+
+// DELETE registers a DELETE handler.
+func (a *App) DELETE(path string, h Handler, middlewares ...Middleware) *App {
+	handler := chainMiddlewares(h, middlewares...)
+	a.mux.Delete(path, a.wrapHandler(handler))
+	return a
 }
 
 // wrapHandler converts DX Handler to http.HandlerFunc.
@@ -167,7 +176,7 @@ func (a *App) wrapHandler(h Handler) http.HandlerFunc {
 			r.Body = http.MaxBytesReader(w, r.Body, a.bodyLimit)
 		}
 
-		c := newCtx(w, r, a.strictJSON)
+		c := newCtx(w, r)
 		if err := h(c); err != nil {
 			a.errorHandler(c, err)
 		}

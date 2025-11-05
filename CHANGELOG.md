@@ -19,6 +19,14 @@ All notable changes to Owl will be documented in this file.
 - 🎯 **Pointer & Array Field Support**:
   - Bind to pointer fields: `*string`, `*int`
   - Bind to array fields: `[3]int`, `[5]string`
+- 🚀 **HTTP Method Shortcuts**: Direct routing on App instance
+  - `app.GET()`, `app.POST()`, `app.PUT()`, `app.PATCH()`, `app.DELETE()`
+  - Convenience methods for simple routes without groups
+  - Maintains full middleware and handler chaining support
+- 🔌 **UberFx Compatibility**: Simple lifecycle management
+  - `app.Listen(addr)` returns `*http.Server` for external management
+  - `app.Shutdown()` for graceful shutdown (similar to Fiber)
+  - Perfect for dependency injection frameworks
 - 🛡️ **Enhanced Security**:
   - Named constants: `maxFieldLength`, `maxTextBodySize`, `maxFileSize`
   - File size validation (50MB per file)
@@ -47,6 +55,25 @@ All notable changes to Owl will be documented in this file.
 - 🔧 Refactored `Text()` and `Bytes()` methods to use shared helper
 - 🔧 Replaced magic numbers with named constants throughout codebase
 - 🔧 Improved error messages for better debugging
+
+### Removed
+
+- 🗑️ **Removed Graceful() Method**: Keep framework focused
+  - Removed `app.Graceful()` method for simplicity
+  - Added simple `app.Listen()` and `app.Shutdown()` for uberfx compatibility
+  - Similar API to Fiber framework for familiar experience
+- 🗑️ **Removed StrictJSON Feature**: Simplified JSON binding
+  - Removed `AppConfig.StrictJSON` and related validation logic
+  - Developers can use `json.Decoder.DisallowUnknownFields()` directly if needed
+  - Reduces framework size and keeps it focused on core features
+  - Other major frameworks (Gin, Echo, Fiber) don't include this feature
+
+### Fixed
+
+- 🔒 **Security Fix**: Eliminated redundant body limit checks
+  - Removed duplicate `maxTextBodySize` constant in binder
+  - Now relies solely on App-level `MaxBytesReader` for consistent protection
+  - Prevents conflicting body limit behaviors
 
 ### Improved
 

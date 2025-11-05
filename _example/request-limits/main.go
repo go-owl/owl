@@ -84,5 +84,5 @@ func main() {
 	// Prevent unused variable warnings
 	_, _, _, _ = app1, app2, app3, app4
 
-	log.Fatal(app.Graceful(":8080"))
+	log.Fatal(app.Start(":8080"))
 }

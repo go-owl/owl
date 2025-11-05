@@ -140,7 +140,7 @@ func TestCtx_Bind(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 
-	ctx := newCtx(w, req, false)
+	ctx := newCtx(w, req)
 	binder := ctx.Bind()
 
 	if binder == nil {
@@ -171,7 +171,7 @@ func TestCtx_BindJSON_BackwardCompatibility(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 
-	ctx := newCtx(w, req, false)
+	ctx := newCtx(w, req)
 
 	var result struct {
 		Name string `json:"name"`
@@ -538,73 +538,6 @@ func TestBinder_Bytes(t *testing.T) {
 }
 
 // ===== NEW TESTS FOR ENHANCED FEATURES =====
-
-func TestBinder_JSON_StrictMode(t *testing.T) {
-	tests := []struct {
-		name       string
-		body       string
-		strictJSON bool
-		wantErr    bool
-		errMsg     string
-	}{
-		{
-			name:       "Strict mode - unknown field should error",
-			body:       `{"name":"John","age":25,"extra":"field"}`,
-			strictJSON: true,
-			wantErr:    true,
-			errMsg:     "unknown field",
-		},
-		{
-			name:       "Strict mode - valid JSON should pass",
-			body:       `{"name":"John","age":25}`,
-			strictJSON: true,
-			wantErr:    false,
-		},
-		{
-			name:       "Normal mode - unknown field should pass",
-			body:       `{"name":"John","age":25,"extra":"field"}`,
-			strictJSON: false,
-			wantErr:    false,
-		},
-		{
-			name:       "Strict mode - trailing data should error",
-			body:       `{"name":"John","age":25}{"extra":"data"}`,
-			strictJSON: true,
-			wantErr:    true,
-			errMsg:     "trailing data",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest(http.MethodPost, "/test", bytes.NewBufferString(tt.body))
-			req.Header.Set("Content-Type", "application/json")
-
-			binder := &Binder{
-				request:    req,
-				strictJSON: tt.strictJSON,
-			}
-
-			var result struct {
-				Name string `json:"name"`
-				Age  int    `json:"age"`
-			}
-
-			err := binder.JSON(&result)
-
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Binder.JSON() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if tt.wantErr && tt.errMsg != "" {
-				if err == nil || !contains(err.Error(), tt.errMsg) {
-					t.Errorf("Expected error containing %q, got %v", tt.errMsg, err)
-				}
-			}
-		})
-	}
-}
 
 func TestBinder_Query_MultipleTypes(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/test?tags=a&tags=b&scores=1&scores=2&scores=3&active=true&active=false", nil)

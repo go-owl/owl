@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
-	"io"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -16,21 +15,17 @@ import (
 const (
 	// maxFieldLength is the maximum allowed length for a single field value (10KB)
 	maxFieldLength = 10000
-	// maxTextBodySize is the maximum size for text/bytes content (10MB)
-	maxTextBodySize = 10 << 20
 	// maxFileSize is the maximum size per uploaded file (50MB)
 	maxFileSize = 50 << 20
 )
 
 // Binder handles different content type bindings.
 type Binder struct {
-	request    *http.Request
-	strictJSON bool // Enable strict JSON validation
+	request *http.Request
 }
 
 // JSON binds request body as JSON.
 // Go's json.Decoder automatically protects against deeply nested JSON (max depth ~10000).
-// When strictJSON is enabled, unknown fields and trailing data are rejected.
 func (b *Binder) JSON(dst interface{}) error {
 	if b.request.Body == nil {
 		return NewHTTPError(http.StatusBadRequest, "request body is empty")
@@ -39,18 +34,8 @@ func (b *Binder) JSON(dst interface{}) error {
 
 	dec := json.NewDecoder(b.request.Body)
 
-	// Enable strict mode if configured
-	if b.strictJSON {
-		dec.DisallowUnknownFields()
-	}
-
 	if err := dec.Decode(dst); err != nil {
 		return NewHTTPError(http.StatusBadRequest, "invalid JSON: "+err.Error())
-	}
-
-	// Check for trailing data when strict mode is enabled
-	if b.strictJSON && dec.More() {
-		return NewHTTPError(http.StatusBadRequest, "invalid JSON: trailing data after JSON object")
 	}
 
 	return nil
@@ -75,9 +60,9 @@ func (b *Binder) XML(dst interface{}) error {
 
 // Text binds request body as plain text string.
 // Useful for webhooks or when you need raw body content.
-// Note: Body size is limited by BodyLimit middleware in App config.
+// Note: Body size is automatically limited by App's BodyLimit config via MaxBytesReader.
 func (b *Binder) Text(dst *string) error {
-	data, err := b.readBodyLimited()
+	data, err := b.readBodySafe()
 	if err != nil {
 		return err
 	}
@@ -87,9 +72,9 @@ func (b *Binder) Text(dst *string) error {
 
 // Bytes binds request body as raw bytes.
 // Useful for binary data or when you need the raw payload.
-// Note: Body size is limited by BodyLimit middleware in App config.
+// Note: Body size is automatically limited by App's BodyLimit config via MaxBytesReader.
 func (b *Binder) Bytes(dst *[]byte) error {
-	data, err := b.readBodyLimited()
+	data, err := b.readBodySafe()
 	if err != nil {
 		return err
 	}
@@ -97,17 +82,16 @@ func (b *Binder) Bytes(dst *[]byte) error {
 	return nil
 }
 
-// readBodyLimited reads the request body with size limit (DRY helper)
-func (b *Binder) readBodyLimited() ([]byte, error) {
+// readBodySafe reads the request body safely (body limit handled by App-level MaxBytesReader)
+func (b *Binder) readBodySafe() ([]byte, error) {
 	if b.request.Body == nil {
 		return nil, NewHTTPError(http.StatusBadRequest, "request body is empty")
 	}
 	defer b.request.Body.Close()
 
-	// Read with size limit for safety
-	lr := &io.LimitedReader{R: b.request.Body, N: maxTextBodySize}
+	// Read body - size limit is enforced by App's MaxBytesReader in wrapHandler
 	buf := new(bytes.Buffer)
-	if _, err := buf.ReadFrom(lr); err != nil {
+	if _, err := buf.ReadFrom(b.request.Body); err != nil {
 		return nil, NewHTTPError(http.StatusBadRequest, "failed to read body: "+err.Error())
 	}
 
